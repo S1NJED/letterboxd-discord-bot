@@ -1,0 +1,1 @@
+# Letterboxd Discord Bot - Friends entry notifier

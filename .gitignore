@@ -1,0 +1,6 @@
+.venv
+__pycache__
+test.py
+.env
+cogs/__pycache__
+db.sqlite
