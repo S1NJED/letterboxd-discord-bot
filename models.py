@@ -7,6 +7,10 @@ class BaseActivity(BaseModel):
 	type: str
 	date: int
 
+	model_config = {
+        "arbitrary_types_allowed": True
+    }
+
 	
 class WatchedActivity(BaseActivity):
 	type: Literal["watched"]
