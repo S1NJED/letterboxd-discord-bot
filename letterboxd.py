@@ -1,8 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 from models import *
-from datetime import datetime
 from utils import *
+from time import sleep
+from letterboxdpy.movie import Movie
 
 HEADERS = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0"
@@ -18,16 +19,36 @@ TYPES = [
 
 
 # movie-name
+# This one rise 429 error code
+# def getMoviePoster(movie_name: str) -> str | None:
+    
+#     sleep(0.5)
+
+#     url = f"https://letterboxd.com/film/{movie_name}/poster/std/230"
+    
+#     try:
+#         req = requests.get(url)
+#         print(req.text)
+#         data = req.json() # url, url2x, shouldObfuscate
+#         movie_poster = data['url']
+#         return movie_poster
+#     except Exception as err:
+#         print(err)
+#         return None # TODO: return defaut image ou jsp
+
 def getMoviePoster(movie_name: str) -> str | None:
-    url = f"https://letterboxd.com/film/{movie_name}/poster/std/230"
+    return Movie(movie_name).poster
+
+def getMovieJson(movie_name: str):
+    url = f"https://letterboxd.com/film/{movie_name}/json/"
 
     try:
         req = requests.get(url)
-        data = req.json() # url, url2x, shouldObfuscate
-        movie_poster = data['url']
-        return movie_poster
-    except:
-        return None # TODO: return defaut image ou jsp
+        data = req.json()
+        return (data) 
+    except Exception as err:
+        print(err)
+        return None
 
 
 def getUserActivty(username: str) -> list[WatchedActivity | RewatchedActivity | RatedActivity | FollowedActivity | LikedReviewActivity | LikedListActivity | ListedDataActivity]:
@@ -62,20 +83,21 @@ def getUserActivty(username: str) -> list[WatchedActivity | RewatchedActivity | 
             else:
                 activity_type = "liked_review"
 
-        # no review
         if activity_type in ["watched",  "rewatched"]:
             data: WatchedDataActivity | RewatchedActivity = WatchedDataActivity()
 
+            # No review
             if "-basic" in section.attrs.get("class"):
                 data.movie_name = section.select_one("a:nth-of-type(2)").text.strip()
-                data.movie_formatted_name = section.select_one("a:nth-of-type(2)").attrs.get("href").split('/')[2]
+                data.movie_formatted_name = section.select_one("a:nth-of-type(2)").attrs.get("href").split('/')[3]
                 data.movie_url = f"https://letterboxd.com/film/" + data.movie_formatted_name
                 data.movie_poster_url = getMoviePoster(data.movie_formatted_name)
                 data.user_rating = section.select_one("span.rating").text.strip()
                 data.user_comment = None
+            # Review
             else:
                 data.movie_name = section.select_one("div.body > header > span > h2 > a").text.strip()
-                data.movie_formatted_name = section.select_one("div.body > header > span > h2 > a").attrs.get("href").split('/')[2]
+                data.movie_formatted_name = section.select_one("div.body > header > span > h2 > a").attrs.get("href").split('/')[3]
                 data.movie_url = f"https://letterboxd.com/film/" + data.movie_formatted_name
                 data.movie_poster_url = getMoviePoster(data.movie_formatted_name)
                 data.user_rating = section.select_one("span.rating").text.strip()
@@ -84,20 +106,17 @@ def getUserActivty(username: str) -> list[WatchedActivity | RewatchedActivity | 
             if f"{activity_type} and rated" in data.movie_name:
                 data.movie_name = data.movie_name.replace(f"{activity_type} and rated", "").strip()
 
-        # if activity_type in ["watched", "rewatched", "rated", "liked_review"]:
-            
-        #     '''
-        #     watched (review) X 
-        #     watched and rated X
-        #     rewatched (review)
-        #     rewatched and rated
-        #     rated
-        #     '''
-            
-        #     data = {
-        #         "movie"
-        #     }
-
+        # TODO: handle:
+        if activity_type == "rated":
+            pass
+        elif activity_type == "liked_list":
+            pass
+        elif activity_type == "liked_review":
+            pass
+        elif activity_type == "added":
+            pass
+        elif activity_type == "listed":
+            pass
 
         activities.append({
             "id": activity_id,
