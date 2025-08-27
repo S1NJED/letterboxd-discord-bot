@@ -1,11 +1,27 @@
-DB = "db.sqlite"
+DB = "db"
 PYTHON = python
 
-db:
+create_db:
 	@echo "Creating database"
-	@sqlite3 $(DB) < create_db.sql
+	@sqlite3 database/$(DB).sqlite < database/create_db.sql
 	@echo "Sucessfully created database"
 
-test:
-	clear
-	@$(PYTHON) test.py
+create_db_dev:
+	@echo "Creating database (dev)"
+	@sqlite3 database/$(DB)_dev.sqlite < database/create_db.sql
+	@echo "Sucessfully created database"
+
+
+run:
+	@clear
+	@if [ ! -f database/$(DB).sqlite ]; then \
+		make create_db; \
+	fi
+	@python src/bot.py --mode=prod
+
+dev:
+	@clear
+	@if [ ! -f database/$(DB)_dev.sqlite ]; then \
+		make create_db_dev; \
+	fi
+	@python src/bot.py --mode=dev
