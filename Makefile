@@ -25,3 +25,10 @@ dev:
 		make create_db_dev; \
 	fi
 	@python src/bot.py --mode=dev
+
+fclean:
+	@rm database/*sqlite* log
+	@rm -rf __pycache__
+	@rm -rf src/__pycache__
+	@rm -rf src/cogs/__pycache__
+	@echo "Removed db and log and __pycache__"
