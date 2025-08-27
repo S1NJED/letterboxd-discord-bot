@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS Users (
     user_id TEXT PRIMARY KEY,
     username TEXT,
-    log_count INT DEFAULT 0,
     deleted TINYINT DEFAULT 0,
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
