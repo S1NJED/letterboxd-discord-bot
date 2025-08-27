@@ -1,5 +1,7 @@
 # Letterboxd Discord Bot - Friends entry notifier
 
-TODO:
-
-[ ] Add elements path in a config file based on `-basic` or `-review` so cleaner code
+- [x] cmd: setup channel
+- [x] cmd: add user
+- [x] cmd: delete user
+- [x] worker
+- [ ] embed message
