@@ -3,4 +3,5 @@ __pycache__
 test.py
 .env
 cogs/__pycache__
-db.sqlite
+log
+*sqlite*
