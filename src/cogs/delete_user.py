@@ -14,14 +14,13 @@ class DeleteUserCog(Cog):
 		description="Delete user from the checklist",
 	)
 	@app_commands.checks.has_permissions(administrator=True)
-	async def delete_user(self, interaction: Interaction, user: discord.User):
-		user = interaction.user
+	async def delete_user(self, interaction: Interaction, username: str):
 		await db_query(
 			db_path=self.bot.db_path,
-			query="DELETE FROM Users WHERE user_id=?",
-			params=(user.id)
+			query="DELETE FROM Users WHERE username=?",
+			params=(username)
 		)
-		await interaction.response.send_message(f"Sucessfully deleted {user.name} from the list")
+		await interaction.response.send_message(f"Sucessfully deleted {username} from the list")
 
 
 
