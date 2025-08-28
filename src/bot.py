@@ -7,7 +7,8 @@ import argparse
 import logging
 from utils import db_query
 from letterboxdpy.user import User
-
+from letterboxdpy.movie import Movie
+from letterboxdpy.core.exceptions import InvalidResponseError
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--mode")
@@ -37,12 +38,13 @@ class Bot(commands.Bot):
 				print(f"{file} cog is already loaded")
 			except Exception as err:
 				raise err
+		
 
 
 	async def on_ready(self):
 		print(f"Bot is ready: {self.user}")
 
-	@tasks.loop(seconds=60)
+	@tasks.loop(seconds=10)
 	async def letterboxd_check_task(self):
 		# Check if channel_id in database
 		config_row = await db_query(
@@ -70,10 +72,11 @@ class Bot(commands.Bot):
 
 			user = User(username)
 			user_logs = user.get_activity()
+			user_pfp = user.avatar.get("url")
 
 			# Iterate over `user` activity and check each activity id if its in db or not
-			for activity_id, data in user_logs['logs'].items():
-
+			for activity_id, data in user_logs['activities'].items():
+				
 				# Check if is already logged
 				activity_row = await db_query(
 					db_path=self.db_path,
@@ -85,7 +88,26 @@ class Bot(commands.Bot):
 				if activity_row:
 					continue # activity already logged in
 
-				await self.letterboxd_text_channel.send(f"New activity from {username}\n\n{data.get("title")}")
+				# Create embed
+				embed = discord.Embed(description="")
+				embed.set_author(name=username, url=f"https://letterboxd.com/{username}", icon_url=user_pfp)
+				embed.color = discord.Color.random()
+
+				embed.title = data['content']['description']
+				
+				if data['content']['action'] in ["added", "rated", "watched", "liked"]:
+					movie_slug = data['content']['movie']['slug']
+					movie = Movie(movie_slug)
+					movie_poster = movie.get_poster()
+					movie_url = f"https://letterboxd.com/film/" + movie_slug
+					embed.set_thumbnail(url=movie_poster)
+
+					if data['content'].get("review"):
+						embed.description += f"`{data['content']['review']['content']}`"
+
+					embed.description += f"{'\n'if len(embed.description) else ''}[link]({movie_url})"
+
+				await self.letterboxd_text_channel.send(embed=embed)
 				
 				await db_query(
 					db_path=self.db_path,
