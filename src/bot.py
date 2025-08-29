@@ -21,6 +21,7 @@ class Bot(commands.Bot):
 	
 	def __init__(self, *args, **kwargs):
 		self.letterboxd_text_channel = None
+		self.loop_running = False
 		super().__init__(*args, **kwargs)
 	
 	async def setup_hook(self):
@@ -47,15 +48,21 @@ class Bot(commands.Bot):
 
 	@tasks.loop(seconds=LOOP_INTERVAL_SECONDS)
 	async def letterboxd_check_task(self):
+		if self.loop_running == True: return # 
+
+		
 		# Check if channel_id in database
 		config_row = await db_query(
 			db_path=self.db_path,
 			query="SELECT text_channel_id FROM Config",
 			fetch="one"
 		)
+		
 		if config_row == None:
 			self.letterboxd_text_channel = None
 			return 
+		 
+		self.loop_running = True
 		text_channel_id = config_row['text_channel_id']
 		# Set up text channel if none or has been changed
 		if self.letterboxd_text_channel == None or self.letterboxd_text_channel.id != text_channel_id:
@@ -117,6 +124,8 @@ class Bot(commands.Bot):
 				)
 
 				await asyncio.sleep(0.5)
+	
+		self.loop_running = False
 
 
 	@letterboxd_check_task.before_loop
