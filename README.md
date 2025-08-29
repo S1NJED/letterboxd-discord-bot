@@ -4,4 +4,7 @@
 - [x] cmd: add user
 - [x] cmd: delete user
 - [x] worker
-- [ ] embed message
+- [x] embed message
+- [ ] Color based on movie poster
+- [ ] Add comment data for `liked`
+- [ ] Add link for liked comment
