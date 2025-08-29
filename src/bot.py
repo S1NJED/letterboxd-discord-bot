@@ -111,7 +111,7 @@ class Bot(commands.Bot):
 					embed.set_thumbnail(url=movie_poster)
 
 					if data['content'].get("review"):
-						embed.description += f"`{data['content']['review']['content']}`"
+						embed.description += f"> `{data['content']['review']['content']}`"
 
 					embed.description += f"{'\n'if len(embed.description) else ''}[link]({movie_url})"
 
