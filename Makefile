@@ -26,6 +26,9 @@ dev:
 	fi
 	@python src/bot.py --mode=dev
 
+delete_activies:
+	sqlite3 database/db_dev.sqlite "DELETE FROM Activities;"
+
 fclean:
 	@rm database/*sqlite* log
 	@rm -rf __pycache__
