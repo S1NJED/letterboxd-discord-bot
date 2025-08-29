@@ -32,3 +32,7 @@ fclean:
 	@rm -rf src/__pycache__
 	@rm -rf src/cogs/__pycache__
 	@echo "Removed db and log and __pycache__"
+
+update-deps:
+	uv pip install -U -r requirements.txt
+	uv pip freeze > requirements.txt
