@@ -15,6 +15,8 @@ parser.add_argument("--mode")
 args = parser.parse_args()
 mode = args.mode
 
+LOOP_INTERVAL_SECONDS = 60 if mode == "prod" else 10
+
 class Bot(commands.Bot):
 	
 	def __init__(self, *args, **kwargs):
@@ -40,11 +42,10 @@ class Bot(commands.Bot):
 				raise err
 		
 
-
 	async def on_ready(self):
 		print(f"Bot is ready: {self.user}")
 
-	@tasks.loop(seconds=10)
+	@tasks.loop(seconds=LOOP_INTERVAL_SECONDS)
 	async def letterboxd_check_task(self):
 		# Check if channel_id in database
 		config_row = await db_query(
