@@ -83,7 +83,8 @@ class Bot(commands.Bot):
 			user_pfp = user.avatar.get("url")
 
 			# Iterate over `user` activity and check each activity id if its in db or not
-			for activity_id, data in user_logs['activities'].items():
+			# Starting from the end
+			for activity_id, data in user_logs['activities'].items().__reversed__():
 				
 				# Check if is already logged
 				activity_row = await db_query(
