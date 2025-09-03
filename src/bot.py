@@ -106,8 +106,8 @@ class Bot(commands.Bot):
 				
 				if data['content']['action'] in ["added", "rated", "watched", "liked"]:
 					movie_slug = data['content']['movie']['slug']
-					movie = Movie(movie_slug)
 					try:
+						movie = Movie(movie_slug)
 						movie_poster = movie.get_poster()
 					except InvalidResponseError:
 						movie_poster = None
