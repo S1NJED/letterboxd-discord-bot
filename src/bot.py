@@ -107,7 +107,11 @@ class Bot(commands.Bot):
 				if data['content']['action'] in ["added", "rated", "watched", "liked"]:
 					movie_slug = data['content']['movie']['slug']
 					movie = Movie(movie_slug)
-					movie_poster = movie.get_poster()
+					try:
+						movie_poster = movie.get_poster()
+					except InvalidResponseError:
+						movie_poster = None
+
 					movie_url = f"https://letterboxd.com/film/" + movie_slug
 					embed.set_thumbnail(url=movie_poster)
 
