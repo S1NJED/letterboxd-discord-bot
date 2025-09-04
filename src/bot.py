@@ -77,6 +77,7 @@ class Bot(commands.Bot):
 
 		for row in users_rows:
 			username = row['username']
+			print(f"Checking activity for {username}")
 
 			user = User(username)
 			user_logs = user.get_activity()
