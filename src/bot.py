@@ -74,63 +74,65 @@ class Bot(commands.Bot):
 			query="SELECT * FROM Users",
 			fetch="all"
 		)
+		try:
+			for row in users_rows:
+				username = row['username']
+				print(f"Checking activity for {username}")
 
-		for row in users_rows:
-			username = row['username']
-			print(f"Checking activity for {username}")
+				user = User(username)
+				user_logs = user.get_activity()
+				user_pfp = user.avatar.get("url")
 
-			user = User(username)
-			user_logs = user.get_activity()
-			user_pfp = user.avatar.get("url")
+				# Iterate over `user` activity and check each activity id if its in db or not
+				# Starting from the end
+				for activity_id, data in user_logs['activities'].items().__reversed__():
+					
+					# Check if is already logged
+					activity_row = await db_query(
+						db_path=self.db_path,
+						query="SELECT * FROM Activities WHERE activity_id = ?",
+						params=(activity_id),
+						fetch="one"
+					)
 
-			# Iterate over `user` activity and check each activity id if its in db or not
-			# Starting from the end
-			for activity_id, data in user_logs['activities'].items().__reversed__():
-				
-				# Check if is already logged
-				activity_row = await db_query(
-					db_path=self.db_path,
-					query="SELECT * FROM Activities WHERE activity_id = ?",
-					params=(activity_id),
-					fetch="one"
-				)
+					if activity_row:
+						continue # activity already logged in
 
-				if activity_row:
-					continue # activity already logged in
+					# Create embed
+					embed = discord.Embed(description="")
+					embed.set_author(name=username, url=f"https://letterboxd.com/{username}", icon_url=user_pfp)
+					embed.color = discord.Color.random()
 
-				# Create embed
-				embed = discord.Embed(description="")
-				embed.set_author(name=username, url=f"https://letterboxd.com/{username}", icon_url=user_pfp)
-				embed.color = discord.Color.random()
+					embed.title = data['content']['description']
+					
+					if data['content']['action'] in ["added", "rated", "watched", "liked"]:
+						movie_slug = data['content']['movie']['slug']
+						try:
+							movie = Movie(movie_slug)
+							movie_poster = movie.get_poster()
+						except InvalidResponseError:
+							movie_poster = None
 
-				embed.title = data['content']['description']
-				
-				if data['content']['action'] in ["added", "rated", "watched", "liked"]:
-					movie_slug = data['content']['movie']['slug']
-					try:
-						movie = Movie(movie_slug)
-						movie_poster = movie.get_poster()
-					except InvalidResponseError:
-						movie_poster = None
+						movie_url = f"https://letterboxd.com/film/" + movie_slug
+						embed.set_thumbnail(url=movie_poster)
 
-					movie_url = f"https://letterboxd.com/film/" + movie_slug
-					embed.set_thumbnail(url=movie_poster)
+						if data['content'].get("review"):
+							embed.description += f"> `{data['content']['review']['content']}`"
 
-					if data['content'].get("review"):
-						embed.description += f"> `{data['content']['review']['content']}`"
+						embed.description += f"{'\n'if len(embed.description) else ''}[link]({movie_url})"
 
-					embed.description += f"{'\n'if len(embed.description) else ''}[link]({movie_url})"
+					await self.letterboxd_text_channel.send(embed=embed)
+					
+					await db_query(
+						db_path=self.db_path,
+						query="INSERT INTO Activities(activity_id, username) VALUES(?, ?)",
+						params=(activity_id, username)
+					)
 
-				await self.letterboxd_text_channel.send(embed=embed)
-				
-				await db_query(
-					db_path=self.db_path,
-					query="INSERT INTO Activities(activity_id, username) VALUES(?, ?)",
-					params=(activity_id, username)
-				)
-
-				await asyncio.sleep(0.5)
-	
+					await asyncio.sleep(0.5)
+		except Exception as err:
+			print(err)
+			
 		self.loop_running = False
 
 
