@@ -105,7 +105,7 @@ class Bot(commands.Bot):
 
 					embed.title = data['content']['description']
 					
-					if data['content']['action'] in ["added", "rated", "watched", "liked"]:
+					if data['content']['action'] in ["added", "rated", "watched", "liked", "rewatched"]:
 						movie_slug = data['content']['movie']['slug']
 						try:
 							movie = Movie(movie_slug)
